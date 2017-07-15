@@ -1,8 +1,11 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "pthread.h"
+#include "time.h"
 
 #define NUM_THREADS 11
+#define DEBUG 0
+//#define ERR
 typedef struct {
   int row;
   int col;
@@ -17,15 +20,18 @@ int grid_check(void *arg);
 //Create Sudoko array
 //This is wrong
 //[row][col]
-// int sudoku[9][9] = {{1, 2, 3, 4, 5, 6, 7, 8, 9},
-// 		                {2, 2, 3, 4, 5, 6, 7, 7, 9},
-//                     {3, 2, 3, 4, 5, 6, 7, 7, 9},
-//                     {4, 2, 3, 4, 5, 6, 7, 7, 9},
-//                     {5, 2, 3, 4, 5, 6, 7, 8, 9},
-// 		                {6, 2, 3, 4, 5, 6, 7, 7, 9},
-//                     {7, 2, 3, 4, 5, 6, 7, 7, 9},
-//                     {8, 2, 3, 4, 5, 6, 7, 7, 9},
-//                     {9, 2, 3, 4, 5, 6, 7, 7, 9}};
+//this will give errors in row 0, col 3, subgrid 1
+#ifdef ERR
+int sudoku[9][9] = {{6, 2, 4, 3, 3, 9, 1, 8, 7},
+            {5, 1, 9, 7, 2, 8, 6, 3, 4},
+            {8, 3, 7, 6, 1, 4, 2, 9, 5},
+            {1, 4, 3, 8, 6, 5, 7, 2, 9},
+            {9, 5, 8, 2, 4, 7, 3, 6, 1},
+            {7, 6, 2, 3, 9, 1, 4, 5, 8},
+            {3, 7, 1, 9, 5, 6, 8, 4, 2},
+            {4, 9, 6, 1, 8, 2, 5, 7, 3},
+            {2, 8, 5, 4, 7, 3, 9, 1, 6}};
+#else
 int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
             {5, 1, 9, 7, 2, 8, 6, 3, 4},
             {8, 3, 7, 6, 1, 4, 2, 9, 5},
@@ -35,17 +41,23 @@ int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
             {3, 7, 1, 9, 5, 6, 8, 4, 2},
             {4, 9, 6, 1, 8, 2, 5, 7, 3},
             {2, 8, 5, 4, 7, 3, 9, 1, 6}};
+#endif
+
 int status[NUM_THREADS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 int main()
 {
+struct timespec tstart={0,0}, tend={0,0};
+//Begin timer
+clock_gettime(CLOCK_MONOTONIC, &tstart);
+
 //Allocate memory for thread
 pthread_t threads[NUM_THREADS];
 int grid_idx=0, i, j;
 
 sudoku_data_t *row, *col;
 sudoku_data_t grid[9];
-//Malloc data for thread_func
+//Create threads to check each row, column and subgrid
 for (i=0;i<9;i+=3)
 {
   for (j=0;j<9;j+=3)
@@ -68,7 +80,7 @@ for (i=0;i<9;i+=3)
     grid[grid_idx].thread_id=grid_idx+2;
     grid[grid_idx].row=i;
     grid[grid_idx].col=j;
-    //printf("spawn subgrid check at row %d, col %d\n", i, j);
+
     pthread_create(&threads[grid_idx+2], NULL, (void *)grid_check, (void *)&grid[grid_idx]);
     grid_idx++;
   }
@@ -80,9 +92,14 @@ for (i=0;i<9;i+=3)
 //Need: column_check, subgrid_check, master_check
 
 //join threads
-//for (i=0;i<NUM_THREADS)
-pthread_join(threads[0], NULL);
-pthread_join(threads[1], NULL);
+for (i=0;i<NUM_THREADS;i++)
+{
+  pthread_join(threads[i], NULL);
+}
+
+clock_gettime(CLOCK_MONOTONIC, &tend);
+printf("Time to solve is %f\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+                                ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
 //check if correct or not
 check_status_array();
@@ -101,7 +118,7 @@ int check_status_array(void)
   {
     if (status[i] == 0)
     {
-      printf("Error in thread %d.\n", i);
+      //printf("Error in thread %d.\n", i);
       //return -1;
     } else {
       //printf("No errors found.\n");
@@ -118,8 +135,10 @@ int row_check(void *arg)
    //point to 1st value, scan rest of the array to see if value repeats
    //check entire row
   //if no values repeat, then change status array
-
+  if (DEBUG)
+  {
    printf("test row_check, thread_id %d\n", row1.thread_id);
+  }
    //check all the rows
    for(idx=0;idx<9;idx++)
    {
@@ -152,8 +171,10 @@ int col_check(void *arg)
    //point to 1st value, scan rest of the array to see if value repeats
    //check entire row
   //if no values repeat, then change status array
-
+  if (DEBUG)
+  {
    printf("test col_check, thread_id %d\n", col.thread_id);
+  }
    //check all the rows
    for(idx=0;idx<9;idx++)
    {
@@ -187,8 +208,10 @@ int grid_check(void *arg)
    //point to 1st value, scan rest of the array to see if value repeats
    //check entire row
   //if no values repeat, then change status array
-
+   if (DEBUG)
+   {
    printf("test grid_check, thread_id %d\n", grid.thread_id);
+   }
    //check subgrid
    for (idx=grid.row; idx<grid.row+3; idx++)
    {
@@ -199,15 +222,11 @@ int grid_check(void *arg)
        {
          for (j=grid.col; j<grid.col+3; j++)
          {
-           if (grid.thread_id == 2)
-           {
-           printf("i %d, j %d, idx %d, idx2 %d\n", i, j, idx, idx2);
-           printf("cur_val %d, sudoku val %d, thread_id %d\n", cur_val, sudoku[i][j], grid.thread_id);
-           }
            if ((cur_val == sudoku[i][j]) && ((idx != i) || (idx2 != j)))
            {
              status[grid.thread_id] = 0;
              printf("Subgrid %d failed\n", grid.thread_id-2);
+             return -1;
            }
          }
        }
