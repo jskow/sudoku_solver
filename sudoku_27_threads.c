@@ -59,15 +59,15 @@ int main()
     {
         for (int j = 0; j < 9; j++)
         {
-//            if (i%3 == 0 && j%3 == 0)
-//            {
-//                grid[grid_idx].thread_id=grid_idx;
-//                grid[grid_idx].row=i;
-//                grid[grid_idx].col=j;
-//
-//                pthread_create(&threads[grid_idx], NULL, (void *)grid_check, (void *)&grid[grid_idx]);
-//                grid_idx++;
-//            }
+            if (i%3 == 0 && j%3 == 0)
+            {
+                grid[grid_idx].thread_id=grid_idx;
+                grid[grid_idx].row=i;
+                grid[grid_idx].col=j;
+
+                pthread_create(&threads[grid_idx], NULL, (void *)grid_check, (void *)&grid[grid_idx]);
+                grid_idx++;
+            }
             if (j == 0)
             {
                 row[grid_idx].thread_id=grid_idx;
