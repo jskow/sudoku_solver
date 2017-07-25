@@ -4,7 +4,7 @@
 #include "time.h"
 #include "sudoku_solver.h"
 
-#define NUM_THREADS 27
+#define NUM_THREADS 18
 #define DEBUG 0
 #define ERR
 
@@ -59,15 +59,15 @@ int main()
     {
         for (int j = 0; j < 9; j++)
         {
-            if (i%3 == 0 && j%3 == 0)
-            {
-                grid[grid_idx].thread_id=grid_idx;
-                grid[grid_idx].row=i;
-                grid[grid_idx].col=j;
-
-                pthread_create(&threads[grid_idx], NULL, (void *)grid_check, (void *)&grid[grid_idx]);
-                grid_idx++;
-            }
+//            if (i%3 == 0 && j%3 == 0)
+//            {
+//                grid[grid_idx].thread_id=grid_idx;
+//                grid[grid_idx].row=i;
+//                grid[grid_idx].col=j;
+//
+//                pthread_create(&threads[grid_idx], NULL, (void *)grid_check, (void *)&grid[grid_idx]);
+//                grid_idx++;
+//            }
             if (j == 0)
             {
                 row[grid_idx].thread_id=grid_idx;
@@ -107,9 +107,6 @@ int main()
 
 //check if correct or not
     check_status_array();
-
-    free(row);
-    free(col);
 
 //print result
     return 0;
@@ -166,7 +163,7 @@ int row_check(void *arg)
 int col_check(void *arg)
 {
     sudoku_data_t col =  *(sudoku_data_t *)arg;
-    int i, j, cur_val, idx;
+    int i, j, cur_val;
     //point to 1st value, scan rest of the array to see if value repeats
     //check entire row
     //if no values repeat, then change status array
@@ -178,6 +175,10 @@ int col_check(void *arg)
         for (i=0;i<9;i++)
         {
             cur_val = sudoku[i][col.col];
+            if(col.col > 8){
+                printf("invalid --- %d\n",col.col);
+            }
+            printf("col:%d-value:%d,%d  \n",col.col,cur_val,col.thread_id);
             //check it against all other values
             for (j=0;j<9;j++)
             {
@@ -211,6 +212,7 @@ int grid_check(void *arg)
         for (idx2=grid.col; idx2<grid.col+3; idx2++)
         {
             cur_val = sudoku[idx][idx2];
+            printf("%d,%d-%d,%d ",grid.row,grid.col,cur_val,grid.thread_id);
             for (i=grid.row; i<grid.row+3; i++)
             {
                 for (j=grid.col; j<grid.col+3; j++)
@@ -218,7 +220,7 @@ int grid_check(void *arg)
                     if ((cur_val == sudoku[i][j]) && ((idx != i) || (idx2 != j)))
                     {
                         status[grid.thread_id] = 0;
-                        printf("Subgrid %d failed\n", grid.thread_id-2);
+                        printf("Subgrid %d failed\n", grid.thread_id);
                         return -1;
                     }
                 }
