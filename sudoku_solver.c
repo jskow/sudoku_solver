@@ -51,7 +51,6 @@ clock_gettime(CLOCK_MONOTONIC, &tstart);
 //Allocate memory for thread
 pthread_t threads[NUM_THREADS];
 int grid_idx=0, i, j;
-
 sudoku_data_t *row, *col;
 sudoku_data_t grid[9];
 //Create threads to check each row, column and subgrid
@@ -101,8 +100,11 @@ printf("Time to solve is %f\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
 //check if correct or not
 check_status_array();
 
+
+//sudoku_ui((void *)row);
 free(row);
 free(col);
+
 
 //print result
 return 0;
@@ -223,6 +225,7 @@ int grid_check(void *arg)
            {
              status[grid.thread_id] = 0;
              printf("Subgrid %d failed\n", grid.thread_id-2);
+             printf("Subgrid row %d, col %d\n", grid.row, grid.col);
              return -1;
            }
          }
