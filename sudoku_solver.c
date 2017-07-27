@@ -6,7 +6,7 @@
 
 #define NUM_THREADS 11
 #define DEBUG 0
-#define ERR
+//#define ERR
 
 
 // int check_status_array(void);
@@ -19,30 +19,119 @@
 //[row][col]
 //this will give errors in row 0, col 3, subgrid 1
 #ifdef ERR
-int sudoku[9][9] = {{6, 2, 4, 3, 3, 9, 1, 8, 7},
-            {5, 1, 9, 7, 2, 8, 6, 3, 4},
-            {8, 3, 7, 6, 1, 4, 2, 9, 5},
-            {1, 4, 3, 8, 6, 5, 7, 2, 9},
-            {9, 5, 8, 2, 4, 7, 3, 6, 1},
-            {7, 6, 2, 3, 9, 1, 4, 5, 8},
-            {3, 7, 1, 9, 5, 6, 8, 4, 2},
-            {4, 9, 6, 1, 8, 2, 5, 7, 3},
-            {2, 8, 5, 4, 7, 3, 9, 1, 6}};
+// int sudoku[9][9] = {{6, 2, 4, 3, 3, 9, 1, 8, 7},
+//             {5, 1, 9, 7, 2, 8, 6, 3, 4},
+//             {8, 3, 7, 6, 1, 4, 2, 9, 5},
+//             {1, 4, 3, 8, 6, 5, 7, 2, 9},
+//             {9, 5, 8, 2, 4, 7, 3, 6, 1},
+//             {7, 6, 2, 3, 9, 1, 4, 5, 8},
+//             {3, 7, 1, 9, 5, 6, 8, 4, 2},
+//             {4, 9, 6, 1, 8, 2, 5, 7, 3},
+//             {2, 8, 5, 4, 7, 3, 9, 1, 6}};
 #else
-int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
-            {5, 1, 9, 7, 2, 8, 6, 3, 4},
-            {8, 3, 7, 6, 1, 4, 2, 9, 5},
-            {1, 4, 3, 8, 6, 5, 7, 2, 9},
-            {9, 5, 8, 2, 4, 7, 3, 6, 1},
-            {7, 6, 2, 3, 9, 1, 4, 5, 8},
-            {3, 7, 1, 9, 5, 6, 8, 4, 2},
-            {4, 9, 6, 1, 8, 2, 5, 7, 3},
-            {2, 8, 5, 4, 7, 3, 9, 1, 6}};
+// int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
+//             {5, 1, 9, 7, 2, 8, 6, 3, 4},
+//             {8, 3, 7, 6, 1, 4, 2, 9, 5},
+//             {1, 4, 3, 8, 6, 5, 7, 2, 9},
+//             {9, 5, 8, 2, 4, 7, 3, 6, 1},
+//             {7, 6, 2, 3, 9, 1, 4, 5, 8},
+//             {3, 7, 1, 9, 5, 6, 8, 4, 2},
+//             {4, 9, 6, 1, 8, 2, 5, 7, 3},
+//             {2, 8, 5, 4, 7, 3, 9, 1, 6}};
 #endif
-
+int sudoku[9][9];
 int status[NUM_THREADS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
+
+#define NUM_SOL_CHECK 19
+
+
+int shift_puzzle(int shift_row);
+int sudoku_solver();
+int sudoku_puzzle_print();
+
+//[row][col]
+//this will give errors in row 0, col 3, subgrid 1
+int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
+                    {5, 1, 9, 7, 2, 8, 6, 3, 4},
+                    {8, 3, 7, 6, 1, 4, 2, 9, 5},
+                    {1, 4, 3, 8, 6, 5, 7, 2, 9},
+                    {9, 5, 8, 2, 4, 7, 3, 6, 1},
+                    {7, 6, 2, 3, 9, 1, 4, 5, 8},
+                    {3, 7, 1, 9, 5, 6, 8, 4, 2},
+                    {4, 9, 6, 1, 8, 2, 5, 7, 3},
+                    {2, 8, 5, 4, 7, 3, 9, 1, 6}};
+
 int main()
+{
+  int i;
+  //pass sudoku to sudoku solvers
+  sudoku_puzzle_print();
+  #ifdef ERR
+  for (i = 0; i < NUM_SOL_CHECK; )
+  {
+    sudoku_solver();
+    if (i >= 9)
+    {
+       shift_puzzle(0);
+     } else {
+       shift_puzzle(1);
+    }
+    i++;
+    if (i != NUM_SOL_CHECK)
+    {
+      sudoku_puzzle_print();
+    }
+  }
+  #else
+  sudoku_solver();
+  #endif
+}
+
+int shift_puzzle(int shift_row)
+{
+  //shift_row == 1, shift by row
+  //shift_col == 0, shift by column
+  int i = 0, first_val;
+    first_val = sudoku[0][0];
+  for (i=0;i<9;i++)
+  {
+    if (shift_row == 1)
+    {
+      if (i == 8)
+      {
+        sudoku[i][0] = first_val;
+      } else {
+        sudoku[i][0] = sudoku[i+1][0];
+      }
+    } else if (shift_row == 0)
+    {
+      if (i == 8)
+      {
+        sudoku[0][i] = first_val;
+      } else {
+        sudoku[0][i] = sudoku[0][i+1];
+      }
+    }
+  }
+}
+
+int sudoku_puzzle_print()
+{
+  int i, j;
+  for (i=0;i<9;i++)
+  {
+    for (j=0;j<9;j++)
+    {
+        printf("%d ", sudoku[i][j]);
+    }
+    printf("\n");
+  }
+
+  return 0;
+}
+
+int sudoku_solver()
 {
 struct timespec tstart={0,0}, tend={0,0};
 //Begin timer
@@ -153,7 +242,7 @@ int row_check(void *arg)
           {
             printf("Error in row %d\n", row1.row);
             status[row1.thread_id] = 0;
-            return -1;
+            //return -1;
           }
        }
      }
@@ -189,7 +278,7 @@ int col_check(void *arg)
           {
             printf("Error in col %d\n", col.col);
             status[col.thread_id] = 0;
-            return -1;
+            //return -1;
           }
        }
      }
@@ -226,7 +315,7 @@ int grid_check(void *arg)
              status[grid.thread_id] = 0;
              printf("Subgrid %d failed\n", grid.thread_id-2);
              printf("Subgrid row %d, col %d\n", grid.row, grid.col);
-             return -1;
+             //return -1;
            }
          }
        }

@@ -16,5 +16,10 @@ int row_check_single(void);
 int col_check_single(void);
 int grid_check_single(void);
 
+//27 thread functions
+int row_check_27(void *arg);
+int col_check_27(void *arg);
+int grid_check_27(void *arg);
+
 //ui functions
 int sudoku_ui(void *arg);
