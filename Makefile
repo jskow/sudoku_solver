@@ -1,8 +1,9 @@
 CFLAGS=-Wall -g -lpthread
 
 sudoku_solver: sudoku_solver.o sudoku_ui.o
+	$(CC) $(CFLAGS) sudoku_solver.o sudoku_ui.o -o sudoku_solver
 single: sudoku_single_thread.o
-		$(CC) sudoku_single_thread.o -o single_thread
+		$(CC) $(CFLAGS) sudoku_single_thread.o -o single_thread
 multi: sudoku_27_threads.o
 		$(CC) $(CFLAGS) sudoku_27_threads.o -g -o multi_thread
 clean:
