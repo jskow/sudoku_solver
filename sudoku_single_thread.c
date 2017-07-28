@@ -4,38 +4,9 @@
 #include "time.h"
 #include "sudoku_solver.h"
 
-#define NUM_THREADS 11
 #define DEBUG 0
-#define ERR
-//Create Sudoko array
-//This is wrong
-//[row][col]
-//this will give errors in row 0, col 3, subgrid 1
-#ifdef ERR
-int sudoku[9][9] = {{6, 2, 4, 3, 3, 9, 1, 8, 7},
-            {5, 1, 9, 7, 2, 8, 6, 3, 4},
-            {8, 3, 7, 6, 1, 4, 2, 9, 5},
-            {1, 4, 3, 8, 6, 5, 7, 2, 9},
-            {9, 5, 8, 2, 4, 7, 3, 6, 1},
-            {7, 6, 2, 3, 9, 1, 4, 5, 8},
-            {3, 7, 1, 9, 5, 6, 8, 4, 2},
-            {4, 9, 6, 1, 8, 2, 5, 7, 3},
-            {2, 8, 5, 4, 7, 3, 9, 1, 6}};
-#else
-int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
-            {5, 1, 9, 7, 2, 8, 6, 3, 4},
-            {8, 3, 7, 6, 1, 4, 2, 9, 5},
-            {1, 4, 3, 8, 6, 5, 7, 2, 9},
-            {9, 5, 8, 2, 4, 7, 3, 6, 1},
-            {7, 6, 2, 3, 9, 1, 4, 5, 8},
-            {3, 7, 1, 9, 5, 6, 8, 4, 2},
-            {4, 9, 6, 1, 8, 2, 5, 7, 3},
-            {2, 8, 5, 4, 7, 3, 9, 1, 6}};
-#endif
 
-int status[NUM_THREADS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-
-int main()
+int sudoku_single_thread(void)
 {
 int rc=0;
 struct timespec tstart={0,0}, tend={0,0};
@@ -50,8 +21,6 @@ clock_gettime(CLOCK_MONOTONIC, &tend);
 printf("Time to solve is %f\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
                                 ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
-//check if correct or not
-//check_status_array();
 if (rc)
 {
   printf("Error found in puzzle.\n");
@@ -60,23 +29,6 @@ if (rc)
 //print result
 return 0;
 } //end main
-
-int check_status_array(void)
-{
-  int i;
-  for (i = 0;i < NUM_THREADS; i++)
-  {
-    if (status[i] == 0)
-    {
-      //printf("Error in thread %d.\n", i);
-      //return -1;
-    } else {
-      //printf("No errors found.\n");
-    }
-  }
-  return 0;
-  //loop through status array, check if valid solution
-}
 
 int row_check_single(void)
 {
@@ -107,7 +59,7 @@ int row_check_single(void)
           if ((cur_val == sudoku[row1.row][j]) && (j != i))
           {
             printf("Error in row %d\n", row1.row);
-            return -1;
+            //return -1;
           }
        }
      }
@@ -145,7 +97,7 @@ int col_check_single(void)
           if ((cur_val == sudoku[j][col.col]) && (j != i))
           {
             printf("Error in col %d\n", col.col);
-            return -1;
+            //return -1;
           }
        }
      }
@@ -189,7 +141,7 @@ int grid_check_single(void)
                {
                  printf("grid.row %d, grid.col %d\n", grid.row, grid.col);
                  printf("Subgrid %d failed\n", grid_num);
-                 return -1;
+                 //return -1;
                }
              }
            }

@@ -4,59 +4,26 @@
 #include "time.h"
 #include "sudoku_solver.h"
 
-#define NUM_THREADS 27
+#define NUM_MULTI_THREADS 27
 #define DEBUG 0
 #define ERR
 
+static int status[NUM_MULTI_THREADS] = {1};
 
-// int check_status_array(void);
-// int row_check(void *arg);
-// int col_check(void *arg);
-// int grid_check(void *arg);
-
-//Create Sudoko array
-//This is wrong
-//[row][col]
-//this will give errors in row 0, col 3, subgrid 1
-#ifdef ERR
-int sudoku[9][9] = {{6, 2, 4, 3, 3, 9, 1, 8, 7},
-                    {5, 1, 9, 7, 2, 8, 6, 3, 4},
-                    {8, 3, 7, 6, 1, 4, 2, 9, 5},
-                    {1, 4, 3, 8, 6, 5, 7, 2, 9},
-                    {9, 5, 8, 2, 4, 7, 3, 6, 1},
-                    {7, 6, 2, 3, 9, 1, 4, 5, 8},
-                    {3, 7, 1, 9, 5, 6, 8, 4, 2},
-                    {4, 9, 6, 1, 8, 2, 5, 7, 3},
-                    {2, 8, 5, 4, 7, 3, 9, 1, 6}};
-#else
-int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
-            {5, 1, 9, 7, 2, 8, 6, 3, 4},
-            {8, 3, 7, 6, 1, 4, 2, 9, 5},
-            {1, 4, 3, 8, 6, 5, 7, 2, 9},
-            {9, 5, 8, 2, 4, 7, 3, 6, 1},
-            {7, 6, 2, 3, 9, 1, 4, 5, 8},
-            {3, 7, 1, 9, 5, 6, 8, 4, 2},
-            {4, 9, 6, 1, 8, 2, 5, 7, 3},
-            {2, 8, 5, 4, 7, 3, 9, 1, 6}};
-#endif
-
-int status[NUM_THREADS] = {1};
-
-int main()
+//Run a thread for every row, column and subgrid
+//This will create a total of 27 threads
+int sudoku_solver_27(void)
 {
     struct timespec tstart={0,0}, tend={0,0};
-//Begin timer
+    //Begin timer
     clock_gettime(CLOCK_MONOTONIC, &tstart);
 
-    //printf("sizeof(int) is %d\n", sizeof(int));
-//Allocate memory for thread
-    pthread_t threads[NUM_THREADS];
+    //Allocate memory for thread
+    pthread_t threads[NUM_MULTI_THREADS];
     int grid_idx=0, i, j;
     //keep track of pointers
     int grid_num=0, row_num=0, col_num=0;
 
-    //sudoku_data_t grid[9],row[9],col[9];
-    //sudoku_data_t row[9],col[9];
     //Allocate on the heap, stack causes some kind of race condition
     sudoku_data_t *grid[9], *row[9], *col[9];
     //create threads for each row,each column and each 3x3 box
@@ -84,7 +51,7 @@ int main()
                 grid[grid_num]->row = i;
                 grid[grid_num]->col = j;
                 grid[grid_num]->thread_id = grid_idx;
-                pthread_create(&threads[grid_idx], NULL, (void *)grid_check, (void *)grid[grid_num]);
+                pthread_create(&threads[grid_idx], NULL, (void *)grid_check_27, (void *)grid[grid_num]);
                 grid_idx++;
                 grid_num++;
             }
@@ -96,7 +63,7 @@ int main()
                 row[row_num]->col=j;
                 //printf("Row grid id %d\n", grid_idx);
                 //printf("row[grid_idx] is %p\n", &row[grid_idx]);
-                if (pthread_create(&threads[grid_idx], NULL, (void *)row_check, (void *)row[row_num]))
+                if (pthread_create(&threads[grid_idx], NULL, (void *)row_check_27, (void *)row[row_num]))
                 {
                   printf("error in creating row thread\n");
                 }
@@ -112,7 +79,7 @@ int main()
                 col[col_num]->col=j;
                 //printf("Col grid id %d\n", grid_idx);
                 //printf("col[grid_idx] is %p\n", &col[grid_idx]);
-                pthread_create(&threads[grid_idx], NULL, (void *)col_check, (void *)col[col_num]);
+                pthread_create(&threads[grid_idx], NULL, (void *)col_check_27, (void *)col[col_num]);
                 col_num++;
                 grid_idx++;
             }
@@ -125,7 +92,7 @@ int main()
 //Need: column_check, subgrid_check, master_check
 
 //join threads
-    for (i=0;i<NUM_THREADS;i++)
+    for (i=0;i<NUM_MULTI_THREADS;i++)
     {
         pthread_join(threads[i], NULL);
     }
@@ -147,10 +114,10 @@ int main()
     return 0;
 } //end main
 
-int check_status_array(void)
+int check_status_array_27(void)
 {
     int i;
-    for (i = 0;i < NUM_THREADS; i++)
+    for (i = 0;i < NUM_MULTI_THREADS; i++)
     {
         if (status[i] == 0)
         {
@@ -165,7 +132,7 @@ int check_status_array(void)
     //loop through status array, check if valid solution
 }
 
-int row_check(void *arg)
+int row_check_27(void *arg)
 {
     sudoku_data_t row1 =  *(sudoku_data_t *)arg;
     int i, j, cur_val;
@@ -195,7 +162,7 @@ int row_check(void *arg)
     return 0;
 }
 
-int col_check(void *arg)
+int col_check_27(void *arg)
 {
     sudoku_data_t col =  *(sudoku_data_t *)arg;
     int i, j, cur_val;
@@ -230,7 +197,7 @@ int col_check(void *arg)
 }
 
 
-int grid_check(void *arg)
+int grid_check_27(void *arg)
 {
     sudoku_data_t grid =  *(sudoku_data_t *)arg;
     //printf("arg pointer is %p, grid_check is %p\n", arg, &grid_check);
