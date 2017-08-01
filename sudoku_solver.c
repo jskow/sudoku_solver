@@ -8,10 +8,11 @@
 #define DEBUG 0
 
 //initialize to 1
-static int status[NUM_THREADS] = {1};
+static int status[NUM_THREADS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 int sudoku_solver(void)
 {
+int ret = 0;
 struct timespec tstart={0,0}, tend={0,0};
 //Begin timer
 clock_gettime(CLOCK_MONOTONIC, &tstart);
@@ -62,12 +63,16 @@ for (i=0;i<NUM_THREADS;i++)
 }
 
 clock_gettime(CLOCK_MONOTONIC, &tend);
-printf("Time to solve is %f\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+printf("Time to solve is %f seconds\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
                                 ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
 //check if correct or not
-check_status_array();
-
+//if there is an error, ret returns 1
+ret = check_status_array();
+for (i=0;i<NUM_THREADS;i++)
+{
+  status[i] = 1;
+}
 
 //sudoku_ui((void *)row);
 free(row);
@@ -75,7 +80,7 @@ free(col);
 
 
 //print result
-return 0;
+return ret;
 } //end main
 
 int check_status_array(void)
@@ -87,6 +92,7 @@ int check_status_array(void)
     {
       //printf("Error in thread %d.\n", i);
       //return -1;
+      return 1;
     } else {
       //printf("No errors found.\n");
     }

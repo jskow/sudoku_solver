@@ -18,21 +18,17 @@ rc |= col_check_single();
 rc |= grid_check_single();
 
 clock_gettime(CLOCK_MONOTONIC, &tend);
-printf("Time to solve is %f\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+printf("Time to solve is %f seconds\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
                                 ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 
-if (rc)
-{
-  printf("Error found in puzzle.\n");
-}
-
 //print result
-return 0;
+return rc;
 } //end main
 
 int row_check_single(void)
 {
    sudoku_data_t row1;
+   int ret=0;
    row1.row = 0;
    row1.col = 0;
    //not needed
@@ -59,14 +55,14 @@ int row_check_single(void)
           if ((cur_val == sudoku[row1.row][j]) && (j != i))
           {
             printf("Error in row %d\n", row1.row);
-            //return -1;
+            ret = 1;
           }
        }
      }
      //printf("row %d passed\n",idx);
   }
 
-  return 0;
+  return ret;
 }
 
 int col_check_single(void)
@@ -75,7 +71,7 @@ int col_check_single(void)
    col.row=0;
    col.col=0;
    col.thread_id=0;
-   int i, j, cur_val, idx;
+   int i, j, cur_val, idx, ret=0;
    //point to 1st value, scan rest of the array to see if value repeats
    //check entire row
   //if no values repeat, then change status array
@@ -97,14 +93,14 @@ int col_check_single(void)
           if ((cur_val == sudoku[j][col.col]) && (j != i))
           {
             printf("Error in col %d\n", col.col);
-            //return -1;
+            ret=1;
           }
        }
      }
      //printf("col %d passed\n",idx);
   }
 
-  return 0;
+  return ret;
 }
 
 
@@ -116,7 +112,7 @@ int grid_check_single(void)
    grid.row=0;
    grid.col=0;
    grid.thread_id=0;
-   int i, j, cur_val, idx, idx2, grid_num;
+   int i, j, cur_val, idx, idx2, grid_num, ret=0;
    //point to 1st value, scan rest of the array to see if value repeats
    //check entire row
   //if no values repeat, then change status array
@@ -141,7 +137,7 @@ int grid_check_single(void)
                {
                  printf("grid.row %d, grid.col %d\n", grid.row, grid.col);
                  printf("Subgrid %d failed\n", grid_num);
-                 //return -1;
+                 ret=1;
                }
              }
            }
@@ -150,5 +146,5 @@ int grid_check_single(void)
         grid.row = row[grid_num++];
         grid.col = col[grid_num++];
     }
-  return 0;
+  return ret;
 }

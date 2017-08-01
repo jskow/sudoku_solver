@@ -9,7 +9,7 @@
 
 //[row][col]
 //This is a working sudoku solution
-int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
+int sudoku[9][9] = {{6, 3, 4, 5, 3, 9, 1, 8, 7},
                     {5, 1, 9, 7, 2, 8, 6, 3, 4},
                     {8, 3, 7, 6, 1, 4, 2, 9, 5},
                     {1, 4, 3, 8, 6, 5, 7, 2, 9},
@@ -21,7 +21,7 @@ int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
 
 int main(int argc, char **argv)
 {
-  int i, input = 0, in_flag=0;
+  int i, input = 0, in_flag=0, ret = 0;
   struct timespec tstart={0,0}, tend={0,0};
 
   //allow user to choose which solution for testing purposes
@@ -54,11 +54,23 @@ int main(int argc, char **argv)
 
   if (in_flag == RUN_CLEAN)
   {
-      sudoku_solver();
+      ret = sudoku_solver();
+      if (ret != 0)
+      {
+        printf("Error found in Sudoku solution\n");
+      } else {
+        printf("Solution is valid.\n");
+      }
   } else {
     for (i = 0; i < NUM_SOL_CHECK; )
     {
-      run_sudoku_solver(in_flag);
+      ret = run_sudoku_solver(in_flag);
+      if (ret != 0)
+      {
+        printf("Error found in Sudoku solution\n");
+      } else {
+        printf("Solution is valid.\n");
+      }
       if (i >= 9)
       {
         //shift each value in column
@@ -76,20 +88,22 @@ int main(int argc, char **argv)
   }
 
   clock_gettime(CLOCK_MONOTONIC, &tend);
-  printf("Total time to solve is %f\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
+  printf("Total application runtime is %f seconds\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) -
                                   ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 }
 
-void run_sudoku_solver(int in_flag)
+int run_sudoku_solver(int in_flag)
 {
+  int ret = 0;
   if (in_flag == RUN_SINGLE_THREAD)
   {
-    sudoku_single_thread();
+    ret = sudoku_single_thread();
   } else if (in_flag == RUN_27_THREADS) {
-    sudoku_solver_27();
+    ret = sudoku_solver_27();
   } else {
-    sudoku_solver();
+    ret = sudoku_solver();
   }
+  return ret;
 }
 //TBD: Allow user to choose which row/column to shift
 //Right now only shifts row 0 and column 0

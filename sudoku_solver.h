@@ -40,4 +40,4 @@ int sudoku_ui(void *arg);
 //Test helper functions
 void shift_puzzle(int shift_row);
 int sudoku_puzzle_print();
-void run_sudoku_solver(int in_flag);
+int run_sudoku_solver(int in_flag);
