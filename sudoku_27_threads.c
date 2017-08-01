@@ -74,11 +74,6 @@ int sudoku_solver_27(void)
         }
     }
 
-
-//Create a thread to check array
-//Use default attributes (NULL)
-//Need: column_check, subgrid_check, master_check
-
 //join threads
   for (i=0;i<NUM_MULTI_THREADS;i++)
   {
@@ -92,6 +87,7 @@ int sudoku_solver_27(void)
 //check if correct or not
   ret = check_status_array_27();
 
+  //release memory
   for (i = 0; i<9; i++)
   {
     free(grid[i]);
@@ -104,11 +100,11 @@ int sudoku_solver_27(void)
     status[i] = 1;
   }
 
-
-//print result
-    return ret;
+  return ret;
 } //end main
 
+
+//function to verify each worker threads ouput to validate solution
 int check_status_array_27(void)
 {
     int i;
@@ -124,9 +120,9 @@ int check_status_array_27(void)
         }
     }
     return 0;
-    //loop through status array, check if valid solution
 }
 
+//function to validate the rows of sudoku
 int row_check_27(void *arg)
 {
     sudoku_data_t row1 =  *(sudoku_data_t *)arg;
@@ -157,6 +153,7 @@ int row_check_27(void *arg)
     return 0;
 }
 
+//function to validate the columns of the sudoku
 int col_check_27(void *arg)
 {
     sudoku_data_t col =  *(sudoku_data_t *)arg;
@@ -172,10 +169,6 @@ int col_check_27(void *arg)
         for (i=0;i<9;i++)
         {
             cur_val = sudoku[i][col.col];
-            if(col.col > 8){
-                printf("invalid --- %d\n",col.col);
-            }
-            //printf("col:%d-value:%d,%d  \n",col.col,cur_val,col.thread_id);
             //check it against all other values
             for (j=0;j<9;j++)
             {
@@ -191,12 +184,10 @@ int col_check_27(void *arg)
     return 0;
 }
 
-
+//function to check the grids of the sudoku
 int grid_check_27(void *arg)
 {
     sudoku_data_t grid =  *(sudoku_data_t *)arg;
-    //printf("arg pointer is %p, grid_check is %p\n", arg, &grid_check);
-    //printf("value @ arg is %d\n", *(int *)arg+4);
     int i, j, cur_val, idx, idx2;
     //point to 1st value, scan rest of the array to see if value repeats
     //check entire row
@@ -220,7 +211,7 @@ int grid_check_27(void *arg)
                     {
                         status[grid.thread_id] = 0;
 
-                        printf("Subgrid at Row: %d, Col %d\n", grid.row, grid.col);
+                        printf("Error in Subgrid at Row: %d, Col %d\n", grid.row, grid.col);
                         //return -1;
                     }
                 }

@@ -25,6 +25,7 @@ printf("Time to solve is %f seconds\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_ns
 return rc;
 } //end main
 
+//function to check row validation
 int row_check_single(void)
 {
    sudoku_data_t row1;
@@ -65,6 +66,7 @@ int row_check_single(void)
   return ret;
 }
 
+//function to check columns of the sudoku puzzle
 int col_check_single(void)
 {
    sudoku_data_t col;
@@ -103,7 +105,7 @@ int col_check_single(void)
   return ret;
 }
 
-
+//function to check the grids
 int grid_check_single(void)
 {
    sudoku_data_t grid;
@@ -118,11 +120,10 @@ int grid_check_single(void)
   //if no values repeat, then change status array
    if (DEBUG)
    {
-   printf("test grid_check, thread_id %d\n", grid.thread_id);
+     printf("test grid_check, thread_id %d\n", grid.thread_id);
    }
    for(grid_num=0; grid_num<9; grid_num++)
    {
-
        //check subgrid
        for (idx=grid.row; idx<grid.row+3; idx++)
        {

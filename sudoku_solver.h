@@ -15,7 +15,7 @@ enum {
 extern int sudoku[9][9];
 
 int check_status_array(void);
-//multi-threaded functions
+//multi-threaded for 11 threads approach functions
 int row_check(void *arg);
 int col_check(void *arg);
 int grid_check(void *arg);
@@ -35,7 +35,7 @@ int check_status_array_27(void);
 int sudoku_solver_27(void);
 
 //ui functions
-int sudoku_ui(void *arg);
+// int sudoku_ui(void *arg);
 
 //Test helper functions
 void shift_puzzle(int shift_row);

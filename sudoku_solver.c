@@ -34,7 +34,7 @@ for (i=0;i<9;i+=3)
       row->row = 0;
       row->col = 0;
       col->row = 0;
-      col->col = 1;
+      col->col = 0;
       //first thread in status array
       row->thread_id=0;
       col->thread_id=1;
@@ -52,9 +52,6 @@ for (i=0;i<9;i+=3)
 }
 
 
-//Create a thread to check array
-//Use default attributes (NULL)
-//Need: column_check, subgrid_check, master_check
 
 //join threads
 for (i=0;i<NUM_THREADS;i++)
@@ -69,20 +66,20 @@ printf("Time to solve is %f seconds\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_ns
 //check if correct or not
 //if there is an error, ret returns 1
 ret = check_status_array();
+
 for (i=0;i<NUM_THREADS;i++)
 {
   status[i] = 1;
 }
 
-//sudoku_ui((void *)row);
+//release memory
 free(row);
 free(col);
 
-
-//print result
 return ret;
 } //end main
 
+//function to verify each worker threads ouput to validate solution
 int check_status_array(void)
 {
   int i;
@@ -98,13 +95,14 @@ int check_status_array(void)
     }
   }
   return 0;
-  //loop through status array, check if valid solution
 }
 
+//function to validate each row of the sudoku
 int row_check(void *arg)
 {
    sudoku_data_t row1 =  *(sudoku_data_t *)arg;
    int i, j, cur_val, idx;
+   //int bCheck = 0;
    //point to 1st value, scan rest of the array to see if value repeats
    //check entire row
   //if no values repeat, then change status array
@@ -115,7 +113,9 @@ int row_check(void *arg)
    //check all the rows
    for(idx=0;idx<9;idx++)
    {
+
      row1.row=idx;
+     //bCheck = 0;
      //check each value in the row
      for (i=0;i<9;i++)
      {
@@ -127,9 +127,16 @@ int row_check(void *arg)
           {
             printf("Error in row %d\n", row1.row);
             status[row1.thread_id] = 0;
+            //logging can be improved
+          //  bCheck = 1;
+          //  break;
             //return -1;
           }
        }
+      //  if(bCheck == 1){
+      //    //to skip the elements of the row once error gets detected
+      //    break;
+      //  }
      }
      //printf("row %d passed\n",idx);
   }
@@ -137,10 +144,12 @@ int row_check(void *arg)
   return 0;
 }
 
+//function to validate the columns of sudoku
 int col_check(void *arg)
 {
    sudoku_data_t col =  *(sudoku_data_t *)arg;
    int i, j, cur_val, idx;
+  //  int bCheck = 0;
    //point to 1st value, scan rest of the array to see if value repeats
    //check entire row
   //if no values repeat, then change status array
@@ -152,6 +161,7 @@ int col_check(void *arg)
    for(idx=0;idx<9;idx++)
    {
      col.col=idx;
+    //  bCheck = 0;
      //check each value in the row
      for (i=0;i<9;i++)
      {
@@ -163,17 +173,22 @@ int col_check(void *arg)
           {
             printf("Error in col %d\n", col.col);
             status[col.thread_id] = 0;
+            //logging can be improved by uncommenting below
+            // bCheck = 1;
+            // break;
             //return -1;
           }
        }
+      //  if(bCheck == 1){
+      //    //skip the values of the current columns validation because of the error detected in current column.
+      //    break;
+      //  }
      }
-     //printf("col %d passed\n",idx);
   }
-
   return 0;
 }
 
-
+// 3x3 subgrid validation function
 int grid_check(void *arg)
 {
    sudoku_data_t grid =  *(sudoku_data_t *)arg;

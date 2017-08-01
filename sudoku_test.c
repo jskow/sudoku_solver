@@ -3,13 +3,9 @@
 #include "time.h"
 #include "sudoku_solver.h"
 
-//Input varying Sudoku arrays to the sudoku solvers
-//Check the speed that it takes to validate the arrays
-#define NUM_SOL_CHECK 1
-
 //[row][col]
 //This is a working sudoku solution
-int sudoku[9][9] = {{6, 3, 4, 5, 3, 9, 1, 8, 7},
+int sudoku[9][9] = {{6, 2, 4, 5, 3, 9, 1, 8, 7},
                     {5, 1, 9, 7, 2, 8, 6, 3, 4},
                     {8, 3, 7, 6, 1, 4, 2, 9, 5},
                     {1, 4, 3, 8, 6, 5, 7, 2, 9},
@@ -21,14 +17,14 @@ int sudoku[9][9] = {{6, 3, 4, 5, 3, 9, 1, 8, 7},
 
 int main(int argc, char **argv)
 {
-  int i, input = 0, in_flag=0, ret = 0;
+  int i, input = 0, in_flag=0, ret = 0, num_of_sol_check = 1;
   struct timespec tstart={0,0}, tend={0,0};
 
   //allow user to choose which solution for testing purposes
   //"-s" runs single thread
   //"-m" runs 27 thread solution
   //"-c" runs only once with the correct solution
-  input = getopt(argc, argv, "smc");
+  input = getopt(argc, argv, "smcit");
   switch (input)
   {
     case 's':
@@ -40,8 +36,30 @@ int main(int argc, char **argv)
       in_flag = RUN_27_THREADS;
       break;
     case 'c':
-      printf("Only run once with clean solution.\n");
+      printf("Only run once with clean solution using 11 threads.\n");
       in_flag = RUN_CLEAN;
+      break;
+    case 'i':
+      printf("For test invalid case using 11 threads.\n");
+      sudoku_puzzle_print();
+      int column,row,value;
+      printf("Enter the column number from 0-8 : ");
+      scanf("%d",&column);
+      printf("Enter the row number from 0-8 : ");
+      scanf("%d",&row);
+      printf("Row : %d , Column : %d ",row,column);
+      printf("\n current value at %d,%d in sudoku is %d",row,column,sudoku[row][column]);
+      printf("\n Enter the value to make the solution invalid : ");
+      do{
+        scanf("%d",&value);
+      }while(value > 8 || value < 0);
+      sudoku[row][column] = value;
+      printf("\n new value at %d,%d in sudoku is %d\n",row,column,sudoku[row][column]);
+      break;
+    case 't':
+      printf("shifting operations..to verify invalid solution..using 11 threads");
+      num_of_sol_check = 19;
+      break;
     default:
       printf("Using 11 theaded solution.\n");
       break;
@@ -52,6 +70,7 @@ int main(int argc, char **argv)
   //pass sudoku to sudoku solvers
   sudoku_puzzle_print();
 
+  //will run 11 thread approach
   if (in_flag == RUN_CLEAN)
   {
       ret = sudoku_solver();
@@ -62,7 +81,7 @@ int main(int argc, char **argv)
         printf("Solution is valid.\n");
       }
   } else {
-    for (i = 0; i < NUM_SOL_CHECK; )
+    for (i = 0; i < num_of_sol_check; )
     {
       ret = run_sudoku_solver(in_flag);
       if (ret != 0)
@@ -73,14 +92,14 @@ int main(int argc, char **argv)
       }
       if (i >= 9)
       {
-        //shift each value in column
+        //shift each value in row
          shift_puzzle(0);
        } else {
-        //shift each value in row
+        //shift each value in column
          shift_puzzle(1);
       }
       i++;
-      if (i != NUM_SOL_CHECK)
+      if (i != num_of_sol_check)
       {
         sudoku_puzzle_print();
       }
@@ -92,15 +111,20 @@ int main(int argc, char **argv)
                                   ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 }
 
+//helper function to call respective validator function of the selected approach
 int run_sudoku_solver(int in_flag)
 {
   int ret = 0;
+
   if (in_flag == RUN_SINGLE_THREAD)
   {
+    //run in single thread mode
     ret = sudoku_single_thread();
-  } else if (in_flag == RUN_27_THREADS) {
+  } else if (in_flag == RUN_27_THREADS)  {
+    //run in 27 threads mode
     ret = sudoku_solver_27();
   } else {
+    //run in 11 threads mode
     ret = sudoku_solver();
   }
   return ret;
@@ -139,10 +163,9 @@ void shift_puzzle(int shift_row)
 //Print the current Sudoku puzzle
 int sudoku_puzzle_print(void)
 {
-  int i, j;
-  for (i=0;i<9;i++)
+  for (int i=0;i<9;i++)
   {
-    for (j=0;j<9;j++)
+    for (int j=0;j<9;j++)
     {
         printf("%d ", sudoku[i][j]);
     }
