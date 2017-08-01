@@ -2,3 +2,9 @@ sudoku_solver
 single_thread
 multi_thread
 *.o
+puzzle.txt
+sudoku
+sudoku1
+sudoku27
+.idea
+cmake-build-debug

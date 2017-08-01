@@ -1,5 +1,4 @@
-CFLAGS=-Wall -g
-#-lpthread
+CFLAGS=-Wall -g -lpthread
 
 all: test
 
