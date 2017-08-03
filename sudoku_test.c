@@ -28,11 +28,9 @@ int main(int argc, char **argv)
   switch (input)
   {
     case 's':
-      printf("Using single threaded solution.\n");
       in_flag = RUN_SINGLE_THREAD;
       break;
     case 'm':
-      printf("Using 27 threaded solution.\n");
       in_flag = RUN_27_THREADS;
       break;
     case 'c':
@@ -40,14 +38,14 @@ int main(int argc, char **argv)
       in_flag = RUN_CLEAN;
       break;
     case 'i':
-      printf("For test invalid case using 11 threads.\n");
+      //printf("For test invalid case using 11 threads.\n");
       sudoku_puzzle_print();
       int column,row,value;
       printf("Enter the column number from 0-8 : ");
       scanf("%d",&column);
       printf("Enter the row number from 0-8 : ");
       scanf("%d",&row);
-      printf("Row : %d , Column : %d ",row,column);
+      //printf("Row : %d , Column : %d ",row,column);
       printf("\n current value at %d,%d in sudoku is %d",row,column,sudoku[row][column]);
       printf("\n Enter the value to make the solution invalid : ");
       do{
@@ -55,13 +53,13 @@ int main(int argc, char **argv)
       }while(value > 8 || value < 0);
       sudoku[row][column] = value;
       printf("\n new value at %d,%d in sudoku is %d\n",row,column,sudoku[row][column]);
+      in_flag = get_sudoku_mode();
       break;
     case 't':
       printf("shifting operations..to verify invalid solution..using 11 threads");
       num_of_sol_check = 19;
       break;
     default:
-      printf("Using 11 theaded solution.\n");
       break;
   }
 
@@ -73,6 +71,7 @@ int main(int argc, char **argv)
   //will run 11 thread approach
   if (in_flag == RUN_CLEAN)
   {
+      printf("Using 11 theaded solution.\n");
       ret = sudoku_solver();
       if (ret != 0)
       {
@@ -111,6 +110,24 @@ int main(int argc, char **argv)
                                   ((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
 }
 
+int get_sudoku_mode(void)
+{
+  int mode;
+  printf("Enter the method you would like to choose: \n");
+  printf("1: Single thread\n");
+  printf("2: 27 thread\n");
+  printf("3: 11 thread\n");
+  printf("->");
+  scanf("%d",&mode);
+
+  if ((mode > 0) && (mode < 4))
+  {
+    return mode;
+  }
+  //default use 11 threaded solution
+  return 3;
+}
+
 //helper function to call respective validator function of the selected approach
 int run_sudoku_solver(int in_flag)
 {
@@ -119,12 +136,15 @@ int run_sudoku_solver(int in_flag)
   if (in_flag == RUN_SINGLE_THREAD)
   {
     //run in single thread mode
+    printf("Using single threaded solution.\n");
     ret = sudoku_single_thread();
   } else if (in_flag == RUN_27_THREADS)  {
     //run in 27 threads mode
+    printf("Using 27 threaded solution.\n");
     ret = sudoku_solver_27();
   } else {
     //run in 11 threads mode
+    printf("Using 11 theaded solution.\n");
     ret = sudoku_solver();
   }
   return ret;

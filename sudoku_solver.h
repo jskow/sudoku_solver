@@ -13,6 +13,7 @@ enum {
 
 //Global sudoku access
 extern int sudoku[9][9];
+int get_sudoku_mode(void);
 
 int check_status_array(void);
 //multi-threaded for 11 threads approach functions
